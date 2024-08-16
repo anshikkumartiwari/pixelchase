@@ -7,9 +7,10 @@ let score2 = 0;
 let singlePlayerMode = true;
 let gameStarted = false;
 let squares = [];
-let disintegrateSquares = [];
-let disintegrateText;
-let disintegrate = false;
+let timerDuration = 0;
+let timerStartTime = 0;
+let timerRunning = false;
+let timerInterval;
 
 let allowRedReturn = false;
 let allowBlueReturn = false;
@@ -20,17 +21,72 @@ function startGame() {
 
     player1 = new Player(width / 3, height / 2, 255, 0, 0, UP_ARROW, DOWN_ARROW, RIGHT_ARROW, LEFT_ARROW, 'red');
     if (!singlePlayerMode) {
-        player2 = new Player(2 * width / 3, height / 2, 0, 0, 255, 87, 83, 68, 65, 'blue'); 
+        player2 = new Player(2 * width / 3, height / 2, 0, 0, 255, 87, 83, 68, 65, 'blue');
     }
     for (let i = 0; i < maxGoals; i++) {
         goals[i] = new Goal(random(width), random(height));
     }
 
     gameStarted = true;
-
     document.getElementById("container").style.display = "none";
-    startDisintegration();
+    document.getElementById("header").style.display = "none"; 
+    document.getElementById("gameOverlay").style.display = "block"; 
+
+    let timerSelect = document.getElementById("timerSelect");
+    let timerValue = timerSelect ? parseInt(timerSelect.value) : 0;
+    timerDuration = timerValue * 1000;
+    timerStartTime = millis();
+    timerRunning = true;
+    startTimer();
 }
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+        let elapsedTime = millis() - timerStartTime;
+        let remainingTime = max(0, timerDuration - elapsedTime);
+
+        let seconds = Math.floor(remainingTime / 1000);
+        let displayTime = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+        document.getElementById("timerDisplay").innerText = `Time: ${displayTime}`;
+
+        
+        if (timerDuration > 0 && remainingTime <= 0) {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            endGame();
+        }
+    }, 1000);
+}
+
+
+function endGame() {
+    gameStarted = false;
+    document.getElementById("gameResult").style.display = "block";
+    
+    let resultText;
+    
+    if (singlePlayerMode) {
+        resultText = `Time's up! Your score is: ${score1}`;
+    } else {
+        resultText = `Game Over! Scores: Red ${score1} - Blue ${score2}. `;
+        if (score1 > score2) {
+            resultText += "Red wins!";
+        } else if (score2 > score1) {
+            resultText += "Blue wins!";
+        } else {
+            resultText += "It's a tie!";
+        }
+    }
+    
+    document.getElementById("gameResult").innerText = resultText;
+
+    
+    document.getElementById("header").style.display = "block";
+}
+
+
 
 function keyPressed() {
     if (gameStarted) {
@@ -84,30 +140,16 @@ function draw() {
         text("Score: " + score1, width - 100, 30);
         if (!singlePlayerMode) {
             fill(0, 0, 255);
-            text("Score: " + score2, 30, 30);re
+            text("Score: " + score2, 30, 30);
         }
     } else {
         background(0);
-
         for (let i = 0; i < squares.length; i++) {
             squares[i].display();
             squares[i].move();
         }
     }
-
-    if (disintegrate) {
-        disintegrateText.show();
-        for (let i = disintegrateSquares.length - 1; i >= 0; i--) {
-            disintegrateSquares[i].display();
-            disintegrateSquares[i].fall();
-            if (disintegrateSquares[i].offScreen()) {
-                disintegrateSquares.splice(i, 1);
-            }
-        }
-    }
 }
-
-
 
 class Player {
     constructor(x, y, r, g, b, upKey, downKey, rightKey, leftKey, color) {
@@ -173,9 +215,21 @@ class Player {
         if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
             if (this.color === 'red' && !allowRedReturn) {
                 this.active = false;
+                allowRedReturn = false; 
             }
             if (this.color === 'blue' && !allowBlueReturn) {
                 this.active = false;
+                allowBlueReturn = false; 
+            }
+
+            
+            if (!singlePlayerMode && !allowRedReturn && !allowBlueReturn) {
+                endGame();
+            }
+
+            
+            if (singlePlayerMode && !allowRedReturn) {
+                endGame();
             }
         }
     }
@@ -231,62 +285,4 @@ class Square {
             this.y = height;
         }
     }
-}
-
-class DisintegrateText {
-    constructor(x, y, size, text) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.text = text;
-    }
-
-    show() {
-        fill(255);
-        textSize(this.size);
-        text(this.text, this.x, this.y);
-    }
-}
-
-class DisintegrateSquare {
-    constructor(x, y, speedY) {
-        this.x = x;
-        this.y = y;
-        this.size = 10;
-        this.speedY = speedY;
-    }
-
-    display() {
-        fill(255);
-        rect(this.x, this.y, this.size, this.size);
-    }
-
-    fall() {
-        this.y += this.speedY;
-    }
-
-    offScreen() {
-        return this.y > height;
-    }
-}
-
-function startDisintegration() {
-    const textElem = document.getElementById('disintegrate');
-    textElem.style.display = 'none'; // Hide the original text element
-
-    const x = 5 * windowWidth / 100; // Set to your text's position (padding left)
-    const y = 5.5 * windowWidth / 100; // Set to your text's position (padding top)
-    const size = 2 * windowWidth / 100; // 3vw converted to pixels
-    const text = "                  ";
-
-    disintegrateText = new DisintegrateText(x, y, size, text);
-
-    for (let i = 0; i < 100; i++) {
-        const dx = x + (i % text.length) * 20; // Adjust spacing as needed
-        const dy = y + Math.floor(i / text.length) * 20;
-        const speedY = random(1, 3);
-        disintegrateSquares.push(new DisintegrateSquare(dx, dy, speedY));
-    }
-
-    disintegrate = true;
 }

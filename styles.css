@@ -6,6 +6,7 @@ body {
   color: white;
   overflow: hidden;
 }
+
 #container {
   position: absolute;
   bottom: 40px;
@@ -13,7 +14,7 @@ body {
   z-index: 1;
 }
 
-h1 {
+#header {
   font-size: 2vw;
   color: #fff;
   position: absolute;
@@ -47,41 +48,50 @@ h1 {
   transform-origin: bottom left;
 }
 
-input {
-  padding: 10px 24px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: none;
-  background-color: #2c3e50;
-  color: #ffffff;
-  text-align: center;
-  transition: background-color 0.3s ease;
-}
-input::placeholder {
-  color: #ffffff;
-}
-select,
-button {
+input, select, button {
   padding: 10px 24px;
   font-size: 16px;
   border-radius: 5px;
   border: none;
   color: white;
 }
+
+input {
+  background-color: #2c3e50;
+}
+
 select {
   background-color: #2c3e50;
 }
+
 button {
   cursor: pointer;
   background-color: #0000ff;
   transition: background-color 0.3s ease;
 }
+
 button:hover {
   background-color: #ff0000;
 }
-canvas {
+
+#timerDisplay {
   position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -1;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+  font-size: 18px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+#gameResult {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  z-index: 100;
+  font-size: 18px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
 }
