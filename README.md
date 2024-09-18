@@ -1,7 +1,7 @@
 
 # Pixel Chase
 
-You can jump straight away to play at `http://pixelchase.000.pe/`
+You can jump straight away to play at http://pixelchase.000.pe/
 
 ## Overview
 Pixel Chase is a simple, minimal, and lightweight game with no graphic or media assets.
